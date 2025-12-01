@@ -30,23 +30,34 @@ public class MediaDatabase {
 
         // login or register
         Scanner scanner = new Scanner(System.in);
-        System.out.println("Do you want to login or create an account?");
-        System.out.println("1: Login");
-        System.out.println("2: Create account");
 
+        Boolean validChoice = false;
         int choice = 0;
-        boolean adminFlag = false;
-        try{
-            choice = scanner.nextInt();
-        } catch(InputMismatchException e) {
-            System.out.println("Input must be an integer");
+        while(!validChoice) {
+            System.out.println("Do you want to login or create an account?");
+            System.out.println("1: Login");
+            System.out.println("2: Create account");
+
+            choice = 0;
+            try {
+                choice = scanner.nextInt();
+
+                if (choice < 1 || choice > 2) {
+                    System.err.println("Error: Must choose either 1 or 2.");
+                } else {
+                    validChoice = true;
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("Input must be an integer");
+            }
         }
 
+        boolean adminFlag = false;
         String username = "";
-        switch(choice){
-            case 1:
+        switch(choice) {
+            case 1: {// login
                 boolean loggedIn = false;
-                while(!loggedIn) {
+                while (!loggedIn) {
                     System.out.println("Are you a user or admin?");
                     System.out.println("1: User");
                     System.out.println("2: Admin");
@@ -57,6 +68,7 @@ public class MediaDatabase {
                     System.out.println("Enter your password: ");
                     String userPassword = scanner.nextLine();
 
+                    // create resources
                     Connection conn = null;
                     PreparedStatement pstmt = null;
                     ResultSet rs = null;
@@ -91,9 +103,6 @@ public class MediaDatabase {
                         // Execute the query
                         rs = pstmt.executeQuery();
 
-                        // Print attribute names
-                        System.out.printf("%-10s %-15s\n", "Username", "Password");
-
                         // Print results
                         if (rs.next()) {
                             System.out.println("You have successfully logged into your account.");
@@ -102,9 +111,20 @@ public class MediaDatabase {
                             System.out.println("Your username or password is incorrect. Try again.");
                         }
 
+                        // while loop (actually method call)
+                        // main menu options
+                        // 1
+                        // 2
+                        // 0 to quit program : break (goes to finally block)
+                        if (!adminFlag) {
+                            System.out.println("This is a user menu");
+                        } else {
+                            System.out.println("This is a admin menu");
+                        }
+
 
                     } catch (SQLException e) {
-                        System.err.println("SQL Error: " + e.getMessage());
+                        System.err.println("Login Error: " + e.getMessage());
                         throw e;
                     } finally {
                         // Close resources properly
@@ -130,19 +150,109 @@ public class MediaDatabase {
                             }
                         }
                     }
-                    break;
                 }
-            case 2:
-                System.out.println("Enter a username");
-                System.out.println("Enter a password");
+                break;
+            }
+            case 2: {// Create user account
+                boolean created = false;
+                while (!created) {
+                    scanner.nextLine();
+                    System.out.println("Enter a username");
+                    username = scanner.nextLine();
+
+                    // create resources
+                    Connection conn = null;
+                    PreparedStatement pstmt = null;
+                    PreparedStatement addUser = null;
+                    ResultSet rs = null;
+
+                    try {
+                        // Make connection with Database
+                        conn = DriverManager.getConnection(url, user, password);
+
+                        String sql = "SELECT username " +
+                                "FROM USERS " +
+                                "WHERE username = ?";
+
+                        // Create prepared statement
+                        pstmt = conn.prepareStatement(sql);
+
+                        // Set parameter
+                        pstmt.setString(1, username);
+
+                        // Execute the query
+                        rs = pstmt.executeQuery();
+
+                        if (rs.next()) {
+                            System.out.println("That username is taken. Try again");
+                            created = false;
+                        } else {
+                            System.out.println("Enter a password");
+                            String userPassword = scanner.nextLine();
+                            System.out.println("Enter your full name");
+                            String userFullName = scanner.nextLine();
+
+                            String addUserSql = "INSERT INTO USERS (Username, Name, Password) " +
+                                    "VALUES (?, ?, ?)";
+                            addUser = conn.prepareStatement(addUserSql);
+
+                            addUser.setString(1, username);
+                            addUser.setString(2, userFullName);
+                            addUser.setString(3, userPassword);
+
+                            int rowsAffected = addUser.executeUpdate();
+                            // conn.commit();
+
+                            if (rowsAffected > 0) {
+                                System.out.println("Account created successfully.");
+                                created = true;
+                            } else {
+                                System.out.println("Something went wrong while creating the user account");
+                            }
+                        }
+
+                        System.out.println("This is a user menu");
+
+
+                        // Display the user main menu
+                    } catch (SQLException e) {
+                        System.err.println("Account Creation Error: " + e.getMessage());
+                        throw e;
+                    } finally {
+                        // Close resources properly
+                        if (rs != null) {
+                            try {
+                                rs.close();
+                            } catch (SQLException e) {
+                                System.err.println("Error when closing ResultSet: " + e.getMessage());
+                            }
+                        }
+                        if (pstmt != null) {
+                            try {
+                                pstmt.close();
+                            } catch (SQLException e) {
+                                System.err.println("Error when closing PreparedStatement: " + e.getMessage());
+                            }
+                        }
+                        if (addUser != null) {
+                            try {
+                                addUser.close();
+                            } catch (SQLException e) {
+                                System.err.println("Error when closing PreparedStatement: " + e.getMessage());
+                            }
+                        }
+                        if (conn != null) {
+                            try {
+                                conn.close();
+                            } catch (SQLException e) {
+                                System.err.println("Error when closing Connection: " + e.getMessage());
+                            }
+                        }
+                    }
+                }
+                break;
+            }
         }
 
-
-        /*Boolean done = false;
-        while(!done){// Main menu
-
-        }*/
     }
-
-
 }
