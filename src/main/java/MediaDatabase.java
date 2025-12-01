@@ -4,6 +4,7 @@ import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class MediaDatabase {
+    public static Scanner scanner = new Scanner(System.in);
 
     public static void main(String[] args) throws SQLException {
         if (args.length < 4) {
@@ -28,29 +29,10 @@ public class MediaDatabase {
 
         MediaDatabase mdb = new MediaDatabase();
 
-        // login or register
-        Scanner scanner = new Scanner(System.in);
-
-        Boolean validChoice = false;
-        int choice = 0;
-        while(!validChoice) {
-            System.out.println("Do you want to login or create an account?");
-            System.out.println("1: Login");
-            System.out.println("2: Create account");
-
-            choice = 0;
-            try {
-                choice = scanner.nextInt();
-
-                if (choice < 1 || choice > 2) {
-                    System.err.println("Error: Must choose either 1 or 2.");
-                } else {
-                    validChoice = true;
-                }
-            } catch (InputMismatchException e) {
-                System.out.println("Input must be an integer");
-            }
-        }
+        System.out.println("Do you want to login or create an account?");
+        System.out.println("1: Login");
+        System.out.println("2: Create account");
+        int choice = getValidInteger(1, 2);
 
         boolean adminFlag = false;
         String username = "";
@@ -107,20 +89,17 @@ public class MediaDatabase {
                         if (rs.next()) {
                             System.out.println("You have successfully logged into your account.");
                             loggedIn = true;
+                            // Menu method calls
+                            if (!adminFlag) {
+                                mdb.loadUserMainMenu(conn, username);
+                            } else {
+                                mdb.loadAdminMainMenu(conn, username);
+                            }
                         } else {
                             System.out.println("Your username or password is incorrect. Try again.");
                         }
 
-                        // while loop (actually method call)
-                        // main menu options
-                        // 1
-                        // 2
-                        // 0 to quit program : break (goes to finally block)
-                        if (!adminFlag) {
-                            System.out.println("This is a user menu");
-                        } else {
-                            System.out.println("This is a admin menu");
-                        }
+
 
 
                     } catch (SQLException e) {
@@ -211,7 +190,7 @@ public class MediaDatabase {
                             }
                         }
 
-                        System.out.println("This is a user menu");
+                        mdb.loadUserMainMenu(conn, username);
 
 
                         // Display the user main menu
@@ -253,6 +232,210 @@ public class MediaDatabase {
                 break;
             }
         }
+    }
+
+    public static int getValidInteger(int min, int max) {
+        boolean validInput = false;
+        while (!validInput) {
+            int choice = 0;
+            try {
+                choice = scanner.nextInt();
+
+                if (choice < min || choice > max) {
+                    System.out.println("Invalid choice. Choose a number between " + min + " and " + max + ".");
+                } else {
+                    validInput = true;
+                    return choice;
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("Input must be an integer.");
+            }
+        }
+        return 0;
+    }
+
+    /*
+    * The user main menu will display the following options
+    * 1. View shows
+    * 2. View movies
+    * 3. View playlists
+    * 4. Request media
+    * */
+    public void loadUserMainMenu(Connection conn, String username) throws SQLException {
+        boolean exitFlag = false;
+        while(!exitFlag) {
+            System.out.println("==== Main Menu ====");
+            System.out.println("1: View Shows\n" +
+                    "2: View Movies\n" +
+                    "3: View Playlists\n" +
+                    "4: Request Media\n" +
+                    "0: Quit");
+
+            int choice = getValidInteger(0, 4);
+            switch (choice) {
+                case 0: {
+                    System.out.println("Goodbye!");
+                    exitFlag = true;
+                    break;
+                }
+                case 1: {
+                    loadUserShows();
+                    break;
+                }
+                case 2: {
+                    loadUserMovies(conn);
+                    break;
+                }
+                case 3: {
+                    viewPlaylists();
+                    break;
+                }
+                case 4: {
+                    addMediaRequest();
+                    break;
+                }
+            }
+        }
+    }
+
+    public void loadAdminMainMenu(Connection conn, String username) throws SQLException {
+        boolean exitFlag = false;
+        while(!exitFlag) {
+            System.out.println("==== Main Menu ====");
+            System.out.println("1. View Shows\n" +
+                    "2. View Movies\n" +
+                    "3: Edit Media\n" +
+                    "4: Review Media Request\n" +
+                    "0: Quit");
+
+            int choice = getValidInteger(0, 3);
+            switch (choice) {
+                case 0: {
+                    System.out.println("Goodbye!");
+                    exitFlag = true;
+                    break;
+                }
+                case 1: {
+                    loadUserShows();
+                    break;
+                }
+                case 2: {
+                    loadUserMovies(conn);
+                    break;
+                }
+                case 3: {
+                    editMedia();
+                    break;
+                }
+                case 4: {
+                    reviewMediaRequest();
+                    break;
+                }
+            }
+        }
+    }
+
+    public void loadUserShows() {
+        boolean backFlag = false;
+        while(!backFlag){
+            System.out.println("==== Shows ====");
+            System.out.println("1. View All\n" +
+                    "2. Filter By Year\n" +
+                    "3. Filter By Genre\n" +
+                    "4. Filter by director\n" +
+                    "0. Back");
+            int choice = getValidInteger(0, 4);
+            switch (choice) {
+                case 0: {
+                    System.out.println("Going back to main menu.");
+                    backFlag = true;
+                    break;
+                }
+                case 1: {
+                    // Display all movies
+                    System.out.println("Displaying all movies:\n");
+
+                    System.out.printf("%-10s %6-s $-10s");
+                    break;
+                }
+            }
+        }
+    }
+
+    /* The following method will display all the available shows for the user.
+    * The user will have the following softing options:
+    * 1. View All
+    * 2. Filter By Year
+    * 3. Filter By Genre
+    * 4. Filter by director*/
+    public void loadUserMovies(Connection conn) throws SQLException {
+        boolean backFlag = false;
+        while(!backFlag){
+            System.out.println("\n==== Movies ====");
+            System.out.println("1. View All\n" +
+                    "2. Filter By Year\n" +
+                    "3. Filter By Genre\n" +
+                    "4. Filter by director\n" +
+                    "0. Back");
+            int choice = getValidInteger(0, 4);
+            switch (choice) {
+                case 0: {
+                    System.out.println("Going back to main menu.");
+                    backFlag = true;
+                    break;
+                }
+                case 1: {
+                    // Display all movies
+
+                    Statement moviesStmt = null;
+                    ResultSet rs = null;
+
+                    String moviesSql = "SELECT med.Title, med.Year, mov.MPA_Rating,  d.name, med.Description " +
+                            "FROM MOVIE mov, MEDIA med, DIRECTOR d " +
+                            "WHERE mov.Title=med.Title AND mov.Year=med.Year AND med.dID=d.dID";
+
+                    try {
+                        moviesStmt = conn.createStatement();
+
+                        rs = moviesStmt.executeQuery(moviesSql);
+
+                        System.out.println("Displaying all movies:\n");
+                        System.out.printf("%-14s %-5s %-6s %-20s %-33s\n", "Title", "Year", "MPA", "Director", "Description");
+
+                        while(rs.next()){
+                            String title = rs.getString("Title");
+                            int year = rs.getInt("Year");
+                            String mpa = rs.getString("MPA_Rating");
+                            String director = rs.getString("Name");
+                            String description = rs.getString("Description");
+                            //String truncated = description.length() > 30 ? description.substring(0, 30) + "..." : description;
+                            System.out.printf("%-14s %-5s %-6s %-20s %-30.30s...\n", title, year, mpa, director, description);
+                        }
+                    } catch (SQLException e) {
+                        System.err.println("Display Movies Error: " + e.getMessage());
+                        throw e;
+                    } finally {
+
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    public void viewPlaylists() {
+
+    }
+
+    public void addMediaRequest() {
+
+    }
+
+    public void editMedia() {
+
+    }
+
+    public void reviewMediaRequest() {
 
     }
 }
