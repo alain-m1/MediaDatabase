@@ -275,6 +275,7 @@ public class MediaDatabase {
             switch (choice) {
                 case 0: {
                     System.out.println("Goodbye!");
+                    exitFlag = true;
                     break;
                 }
                 case 1: {
@@ -311,6 +312,7 @@ public class MediaDatabase {
             switch (choice) {
                 case 0: {
                     System.out.println("Goodbye!");
+                    exitFlag = true;
                     break;
                 }
                 case 1: {
