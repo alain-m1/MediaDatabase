@@ -369,7 +369,7 @@ public class MediaDatabase {
     public void loadUserMovies(Connection conn) throws SQLException {
         boolean backFlag = false;
         while(!backFlag){
-            System.out.println("==== Movies ====");
+            System.out.println("\n==== Movies ====");
             System.out.println("1. View All\n" +
                     "2. Filter By Year\n" +
                     "3. Filter By Genre\n" +
@@ -398,7 +398,7 @@ public class MediaDatabase {
                         rs = moviesStmt.executeQuery(moviesSql);
 
                         System.out.println("Displaying all movies:\n");
-                        System.out.printf("%-14s %-5s %-6s %-14s %-33s\n", "Title", "Year", "MPA", "Director", "Description");
+                        System.out.printf("%-14s %-5s %-6s %-20s %-33s\n", "Title", "Year", "MPA", "Director", "Description");
 
                         while(rs.next()){
                             String title = rs.getString("Title");
@@ -407,7 +407,7 @@ public class MediaDatabase {
                             String director = rs.getString("Name");
                             String description = rs.getString("Description");
                             //String truncated = description.length() > 30 ? description.substring(0, 30) + "..." : description;
-                            System.out.printf("%-14s %-5s %-6s %-14s %-30.30s...\n", title, year, mpa, director, description);
+                            System.out.printf("%-14s %-5s %-6s %-20s %-30.30s...\n", title, year, mpa, director, description);
                         }
                     } catch (SQLException e) {
                         System.err.println("Display Movies Error: " + e.getMessage());
