@@ -398,7 +398,7 @@ public class MediaDatabase {
                         rs = moviesStmt.executeQuery(moviesSql);
 
                         System.out.println("Displaying all movies:\n");
-                        System.out.printf("%-15s %-4s %-5s %-10s %-23s\n", "Title", "Year", "MPA", "Director", "Description");
+                        System.out.printf("%-14s %-5s %-6s %-14s %-33s\n", "Title", "Year", "MPA", "Director", "Description");
 
                         while(rs.next()){
                             String title = rs.getString("Title");
@@ -406,8 +406,8 @@ public class MediaDatabase {
                             String mpa = rs.getString("MPA_Rating");
                             String director = rs.getString("Name");
                             String description = rs.getString("Description");
-                            String truncated = description.length() > 20 ? description.substring(0, 20) + "..." : description;
-                            System.out.printf("%-15s %-4s %-5s %-10s %-20s\n", title, year, mpa, director, truncated);
+                            //String truncated = description.length() > 30 ? description.substring(0, 30) + "..." : description;
+                            System.out.printf("%-14s %-5s %-6s %-14s %-30.30s...\n", title, year, mpa, director, description);
                         }
                     } catch (SQLException e) {
                         System.err.println("Display Movies Error: " + e.getMessage());
