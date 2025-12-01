@@ -302,7 +302,7 @@ public class MediaDatabase {
         boolean exitFlag = false;
         while(!exitFlag) {
             System.out.println("\n==== Main Menu ====  (Enter 0 to quit)");
-            System.out.println("1. View Shows\n" +
+            System.out.println("1: View Shows\n" +
                     "2. View Movies\n" +
                     "3: Edit Media\n" +
                     "4: Review Media Request\n" +
@@ -372,7 +372,7 @@ public class MediaDatabase {
         boolean backFlag = false;
         while(!backFlag){
             System.out.println("\n==== Movies ====  (Enter 0 to go back to Main Menu)");
-            System.out.println("1. View All\n" +
+            System.out.println("1: View All\n" +
                     "2: Filter By Year\n" +
                     "3: Filter By Genre\n" +
                     "4: Filter by director\n" +
