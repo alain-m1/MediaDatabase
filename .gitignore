@@ -6,6 +6,7 @@ build/
 .kotlin
 /gradle-app.setting
 *.class
+gradle.properties
 
 ### IntelliJ IDEA ###
 .idea/

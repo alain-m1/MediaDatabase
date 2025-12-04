@@ -33,7 +33,6 @@ public class MediaDatabase {
         System.out.println("1: Login");
         System.out.println("2: Create account");
         int choice = getValidInteger(1, 2);
-        scanner.nextLine();
 
         boolean adminFlag = false;
         String username = "";
@@ -45,7 +44,6 @@ public class MediaDatabase {
                     System.out.println("1: User");
                     System.out.println("2: Admin");
                     int userType = getValidInteger(1, 2);
-                    scanner.nextLine();
                     System.out.println("\nEnter your username: ");
                     username = scanner.nextLine();
                     System.out.println("\nEnter your password: ");
@@ -99,10 +97,6 @@ public class MediaDatabase {
                         } else {
                             System.out.println("\nYour username or password is incorrect. Try again.");
                         }
-
-
-
-
                     } catch (SQLException e) {
                         System.err.println("Login Error: " + e.getMessage());
                         throw e;
@@ -130,7 +124,7 @@ public class MediaDatabase {
                             }
                         }
                     }
-                }
+                }// End of while loop
                 break;
             }
             case 2: {// Create user account
@@ -227,7 +221,7 @@ public class MediaDatabase {
                             }
                         }
                     }
-                }
+                }// End of while loop
                 break;
             }
         }
@@ -238,7 +232,7 @@ public class MediaDatabase {
         while (!validInput) {
             int choice = 0;
             try {
-                choice = scanner.nextInt();
+                choice = Integer.parseInt(scanner.nextLine());
 
                 if (choice < min || choice > max) {
                     System.out.println("\nInvalid choice. Choose a number between " + min + " and " + max + ".");
@@ -246,9 +240,8 @@ public class MediaDatabase {
                     validInput = true;
                     return choice;
                 }
-            } catch (InputMismatchException e) {
+            } catch (NumberFormatException e) {
                 System.out.println("\nInput must be an integer between " + min + " and " + max + ".");
-                scanner.nextLine();
             }
         }
         return 0;
