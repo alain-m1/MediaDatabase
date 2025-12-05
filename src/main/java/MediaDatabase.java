@@ -8,8 +8,8 @@ public class MediaDatabase {
 
     public static void main(String[] args) throws SQLException {
         if (args.length < 4) {
-            System.err.println("Error: Did not include all necessary arguments.");
-            System.err.println("Usage (choose from below):");
+            System.err.println("\nError: Did not include all necessary arguments.");
+            System.err.println("Usage:");
             System.err.println("Enter: java Main <url> <user> <pwd> <driver>");
             System.exit(1);
         }
@@ -22,14 +22,14 @@ public class MediaDatabase {
         try {
             Class.forName(driver);
         } catch (ClassNotFoundException e) {
-            System.err.println("Error: Did not find the driver you are referencing");
+            System.err.println("\nError: Did not find the driver you are referencing");
             e.printStackTrace();
             System.exit(1);
         }
 
         MediaDatabase mdb = new MediaDatabase();
 
-        System.out.println("Do you want to login or create an account?");
+        System.out.println("\nDo you want to login or create an account?");
         System.out.println("1: Login");
         System.out.println("2: Create account");
         int choice = getValidInteger(1, 2);
@@ -40,14 +40,13 @@ public class MediaDatabase {
             case 1: {// login
                 boolean loggedIn = false;
                 while (!loggedIn) {
-                    System.out.println("Are you a user or admin?");
+                    System.out.println("\nAre you a user or admin?");
                     System.out.println("1: User");
                     System.out.println("2: Admin");
-                    int userType = scanner.nextInt();
-                    scanner.nextLine();
-                    System.out.println("Enter your username: ");
+                    int userType = getValidInteger(1, 2);
+                    System.out.println("\nEnter your username: ");
                     username = scanner.nextLine();
-                    System.out.println("Enter your password: ");
+                    System.out.println("\nEnter your password: ");
                     String userPassword = scanner.nextLine();
 
                     // create resources
@@ -87,7 +86,7 @@ public class MediaDatabase {
 
                         // Print results
                         if (rs.next()) {
-                            System.out.println("You have successfully logged into your account.");
+                            System.out.println("\nHello, " + username + ". You have successfully logged into your account.");
                             loggedIn = true;
                             // Menu method calls
                             if (!adminFlag) {
@@ -96,12 +95,8 @@ public class MediaDatabase {
                                 mdb.loadAdminMainMenu(conn, username);
                             }
                         } else {
-                            System.out.println("Your username or password is incorrect. Try again.");
+                            System.out.println("\nYour username or password is incorrect. Try again.");
                         }
-
-
-
-
                     } catch (SQLException e) {
                         System.err.println("Login Error: " + e.getMessage());
                         throw e;
@@ -129,14 +124,13 @@ public class MediaDatabase {
                             }
                         }
                     }
-                }
+                }// End of while loop
                 break;
             }
             case 2: {// Create user account
                 boolean created = false;
                 while (!created) {
-                    scanner.nextLine();
-                    System.out.println("Enter a username");
+                    System.out.println("\nEnter a username");
                     username = scanner.nextLine();
 
                     // create resources
@@ -163,12 +157,12 @@ public class MediaDatabase {
                         rs = pstmt.executeQuery();
 
                         if (rs.next()) {
-                            System.out.println("That username is taken. Try again");
+                            System.out.println("\nThat username is taken. Try again");
                             created = false;
                         } else {
-                            System.out.println("Enter a password");
+                            System.out.println("\nEnter a password");
                             String userPassword = scanner.nextLine();
-                            System.out.println("Enter your full name");
+                            System.out.println("\nEnter your full name");
                             String userFullName = scanner.nextLine();
 
                             String addUserSql = "INSERT INTO USERS (Username, Name, Password) " +
@@ -183,14 +177,13 @@ public class MediaDatabase {
                             // conn.commit();
 
                             if (rowsAffected > 0) {
-                                System.out.println("Account created successfully.");
+                                System.out.println("\nHello, " + username + ". Your account was created successfully.");
                                 created = true;
+                                mdb.loadUserMainMenu(conn, username);
                             } else {
-                                System.out.println("Something went wrong while creating the user account");
+                                System.out.println("\nSomething went wrong while creating the user account");
                             }
                         }
-
-                        mdb.loadUserMainMenu(conn, username);
 
 
                         // Display the user main menu
@@ -228,7 +221,7 @@ public class MediaDatabase {
                             }
                         }
                     }
-                }
+                }// End of while loop
                 break;
             }
         }
@@ -239,16 +232,16 @@ public class MediaDatabase {
         while (!validInput) {
             int choice = 0;
             try {
-                choice = scanner.nextInt();
+                choice = Integer.parseInt(scanner.nextLine());
 
                 if (choice < min || choice > max) {
-                    System.out.println("Invalid choice. Choose a number between " + min + " and " + max + ".");
+                    System.out.println("\nInvalid choice. Choose a number between " + min + " and " + max + ".");
                 } else {
                     validInput = true;
                     return choice;
                 }
-            } catch (InputMismatchException e) {
-                System.out.println("Input must be an integer.");
+            } catch (NumberFormatException e) {
+                System.out.println("\nInput must be an integer between " + min + " and " + max + ".");
             }
         }
         return 0;
@@ -264,7 +257,7 @@ public class MediaDatabase {
     public void loadUserMainMenu(Connection conn, String username) throws SQLException {
         boolean exitFlag = false;
         while(!exitFlag) {
-            System.out.println("==== Main Menu ====");
+            System.out.println("\n==== Main Menu ====  (Enter 0 to quit)");
             System.out.println("1: View Shows\n" +
                     "2: View Movies\n" +
                     "3: View Playlists\n" +
@@ -274,7 +267,7 @@ public class MediaDatabase {
             int choice = getValidInteger(0, 4);
             switch (choice) {
                 case 0: {
-                    System.out.println("Goodbye!");
+                    System.out.println("\nGoodbye!");
                     exitFlag = true;
                     break;
                 }
@@ -301,8 +294,8 @@ public class MediaDatabase {
     public void loadAdminMainMenu(Connection conn, String username) throws SQLException {
         boolean exitFlag = false;
         while(!exitFlag) {
-            System.out.println("==== Main Menu ====");
-            System.out.println("1. View Shows\n" +
+            System.out.println("\n==== Main Menu ====  (Enter 0 to quit)");
+            System.out.println("1: View Shows\n" +
                     "2. View Movies\n" +
                     "3: Edit Media\n" +
                     "4: Review Media Request\n" +
@@ -311,7 +304,7 @@ public class MediaDatabase {
             int choice = getValidInteger(0, 3);
             switch (choice) {
                 case 0: {
-                    System.out.println("Goodbye!");
+                    System.out.println("\nGoodbye!");
                     exitFlag = true;
                     break;
                 }
@@ -338,22 +331,22 @@ public class MediaDatabase {
     public void loadUserShows() {
         boolean backFlag = false;
         while(!backFlag){
-            System.out.println("==== Shows ====");
-            System.out.println("1. View All\n" +
-                    "2. Filter By Year\n" +
-                    "3. Filter By Genre\n" +
-                    "4. Filter by director\n" +
-                    "0. Back");
+            System.out.println("\n==== Shows ====  (Enter 0 to go back to Main Menu)");
+            System.out.println("1: View All\n" +
+                    "2: Filter By Year\n" +
+                    "3: Filter By Genre\n" +
+                    "4: Filter by director\n" +
+                    "0: Back");
             int choice = getValidInteger(0, 4);
             switch (choice) {
                 case 0: {
-                    System.out.println("Going back to main menu.");
+                    System.out.println("\nGoing back to main menu.");
                     backFlag = true;
                     break;
                 }
                 case 1: {
                     // Display all movies
-                    System.out.println("Displaying all movies:\n");
+                    System.out.println("\nDisplaying all movies:\n");
 
                     System.out.printf("%-10s %6-s $-10s");
                     break;
@@ -371,16 +364,16 @@ public class MediaDatabase {
     public void loadUserMovies(Connection conn) throws SQLException {
         boolean backFlag = false;
         while(!backFlag){
-            System.out.println("\n==== Movies ====");
-            System.out.println("1. View All\n" +
-                    "2. Filter By Year\n" +
-                    "3. Filter By Genre\n" +
-                    "4. Filter by director\n" +
-                    "0. Back");
+            System.out.println("\n==== Movies ====  (Enter 0 to go back to Main Menu)");
+            System.out.println("1: View All\n" +
+                    "2: Filter By Year\n" +
+                    "3: Filter By Genre\n" +
+                    "4: Filter by director\n" +
+                    "0: Back");
             int choice = getValidInteger(0, 4);
             switch (choice) {
                 case 0: {
-                    System.out.println("Going back to main menu.");
+                    System.out.println("\nGoing back to main menu.");
                     backFlag = true;
                     break;
                 }
@@ -399,7 +392,7 @@ public class MediaDatabase {
 
                         rs = moviesStmt.executeQuery(moviesSql);
 
-                        System.out.println("Displaying all movies:\n");
+                        System.out.println("\nDisplaying all movies:\n");
                         System.out.printf("%-14s %-5s %-6s %-20s %-33s\n", "Title", "Year", "MPA", "Director", "Description");
 
                         while(rs.next()){

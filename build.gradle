@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+	id 'application'
 }
 
 group = 'com.alain'
@@ -13,6 +14,41 @@ dependencies {
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    implementation 'com.mysql:mysql-connector-j:9.5.0'
+}
+
+// The following variables hold the username and password for mysql stored in the gradle.properties file.
+def mysqlUser = project.findProperty("mysqlUser") ?: {
+    throw new GradleException("Unable to find mysqlUser in gradle.properties file.")
+}()
+def mysqlPass = project.findProperty("mysqlPass") ?: {
+    throw new GradleException("Unable to find mysqlPass in gradle.properties file.")
+}()
+
+application {
+    mainClass = 'MediaDatabase'
+}
+
+// Gradle task for running the program with preset parameters.
+tasks.register('runDatabase') {
+    dependsOn tasks.named('classes')
+
+    doLast {
+        javaexec {
+            classpath = sourceSets.main.runtimeClasspath
+
+            mainClass = 'MediaDatabase'
+			
+            standardInput = System.in
+
+            args(
+                'jdbc:mysql://localhost:3306/mediadatabase',
+                mysqlUser,
+                mysqlPass,
+                'com.mysql.cj.jdbc.Driver'
+            )
+        }
+    }
 }
 
 test {
