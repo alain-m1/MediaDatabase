@@ -272,7 +272,7 @@ public class MediaDatabase {
                     break;
                 }
                 case 1: {
-                    loadUserShows();
+                    loadUserShows(conn);
                     break;
                 }
                 case 2: {
@@ -280,7 +280,7 @@ public class MediaDatabase {
                     break;
                 }
                 case 3: {
-                    viewPlaylists();
+                    viewPlaylists(conn, username);
                     break;
                 }
                 case 4: {
@@ -309,7 +309,7 @@ public class MediaDatabase {
                     break;
                 }
                 case 1: {
-                    loadUserShows();
+                    loadUserShows(conn);
                     break;
                 }
                 case 2: {
@@ -328,7 +328,7 @@ public class MediaDatabase {
         }
     }
 
-    public void loadUserShows() {
+    public void loadUserShows(Connection conn) throws SQLException {
         boolean backFlag = false;
         while(!backFlag){
             System.out.println("\n==== Shows ====  (Enter 0 to go back to Main Menu)");
@@ -345,10 +345,201 @@ public class MediaDatabase {
                     break;
                 }
                 case 1: {
-                    // Display all movies
-                    System.out.println("\nDisplaying all movies:\n");
+                    // Display all shows
 
-                    System.out.printf("%-10s %6-s $-10s");
+                    Statement showsStmt = null;
+                    ResultSet rs = null;
+
+                    String showsSql = "SELECT med.Title, med.Year, d.name, med.Description " +
+                            "FROM `SHOW` sho, MEDIA med, DIRECTOR d " +
+                            "WHERE sho.Title=med.Title AND sho.Year=med.Year AND med.dID=d.dID";
+
+                    try {
+                        showsStmt = conn.createStatement();
+
+                        rs = showsStmt.executeQuery(showsSql);
+
+                        System.out.println("\nDisplaying all shows:\n");
+                        System.out.printf("%-14s %-5s %-20s %-33s\n", "Title", "Year", "Director", "Description");
+
+                        while (rs.next()) {
+                            String title = rs.getString("Title");
+                            int year = rs.getInt("Year");
+                            String director = rs.getString("Name");
+                            String description = rs.getString("Description");
+                            //String truncated = description.length() > 30 ? description.substring(0, 30) + "..." : description;
+                            System.out.printf("%-14s %-5s %-20s %-30.30s...\n", title, year, director, description);
+                        }
+                    } catch (SQLException e) {
+                        System.err.println("Display Shows Error: " + e.getMessage());
+                        throw e;
+                    } finally {
+                        if (rs != null) {
+                            try {
+                                rs.close();
+                            } catch (SQLException e) {
+                                System.err.println("Error when closing ResultSet: " + e.getMessage());
+                            }
+                        }
+                        if (showsStmt != null) {
+                            try {
+                                showsStmt.close();
+                            } catch (SQLException e) {
+                                System.err.println("Error when closing PreparedStatement: " + e.getMessage());
+                            }
+                        }
+                    }
+                    break;
+                }
+                case 2: {
+                    // Display shows based on year
+                    System.out.println("\nWhat year would you like to filter by?");
+                    int year = getValidInteger(0, 2026);
+
+                    PreparedStatement showsByYearStmt = null;
+                    ResultSet rs = null;
+
+                    String showsByYearSql = "SELECT med.Title, med.Year, d.name, med.Description " +
+                            "FROM `SHOW` sho, MEDIA med, DIRECTOR d " +
+                            "WHERE sho.Title=med.Title AND sho.Year=med.Year AND med.dID=d.dID AND med.Year=?";
+
+                    try {
+                        showsByYearStmt = conn.prepareStatement(showsByYearSql);
+
+                        showsByYearStmt.setInt(1, year);
+                        rs = showsByYearStmt.executeQuery();
+
+                        System.out.println("\nDisplaying all shows from the year " +
+                                year + ":\n");
+                        System.out.printf("%-14s %-5s %-20s %-33.33s\n", "Title", "Year", "Director", "Description");
+
+                        while (rs.next()) {
+                            String title = rs.getString("Title");
+                            int yearOutput = rs.getInt("Year");
+                            String director = rs.getString("Name");
+                            String description = rs.getString("Description");
+                            //String truncated = description.length() > 30 ? description.substring(0, 30) + "..." : description;
+                            System.out.printf("%-14s %-5s %-20s %-30.30s...\n", title, yearOutput, director, description);
+                        }
+                    } catch (SQLException e) {
+                        System.err.println("Display Shows Error: " + e.getMessage());
+                        throw e;
+                    } finally {
+                        if (rs != null) {
+                            try {
+                                rs.close();
+                            } catch (SQLException e) {
+                                System.err.println("Error when closing ResultSet: " + e.getMessage());
+                            }
+                        }
+                        if (showsByYearStmt != null) {
+                            try {
+                                showsByYearStmt.close();
+                            } catch (SQLException e) {
+                                System.err.println("Error when closing PreparedStatement: " + e.getMessage());
+                            }
+                        }
+                    }
+                    break;
+                }
+                case 3: {
+                    // Display all shows filtered by Genre
+
+                    System.out.println("\nWhat genre would you like to filter shows by: ");
+                    String showGenre = scanner.nextLine();
+
+                    PreparedStatement showsByGenreStmt = null;
+                    ResultSet rs = null;
+
+                    String showsByGenreSql = "SELECT med.Title, med.Year, d.name, med.Description " +
+                            "FROM `SHOW` sho, MEDIA med, DIRECTOR d, GENRE g " +
+                            "WHERE sho.Title=med.Title AND sho.Year=med.Year AND med.dID=d.dID AND LOWER(g.Genre)=LOWER(?) AND g.Year=sho.Year AND g.Title=sho.Title";
+
+                    try {
+                        showsByGenreStmt = conn.prepareStatement(showsByGenreSql);
+
+                        showsByGenreStmt.setString(1, showGenre);
+                        rs = showsByGenreStmt.executeQuery();
+
+                        System.out.println("\nDisplaying shows filtered by Genre:\n");
+                        System.out.printf("%-14s %-5s %-20s %-33s\n", "Title", "Year", "Director", "Description");
+
+                        while (rs.next()) {
+                            String title = rs.getString("Title");
+                            int year = rs.getInt("Year");
+                            String director = rs.getString("Name");
+                            String description = rs.getString("Description");
+                            System.out.printf("%-14s %-5s %-20s %-30.30s...\n", title, year, director, description);
+                        }
+                    } catch (SQLException e) {
+                        System.err.println("Display Shows by Genre Error: " + e.getMessage());
+                        throw e;
+                    } finally {
+                        if (rs != null) {
+                            try {
+                                rs.close();
+                            } catch (SQLException e) {
+                                System.err.println("Error when closing ResultSet: " + e.getMessage());
+                            }
+                        }
+                        if (showsByGenreStmt != null) {
+                            try {
+                                showsByGenreStmt.close();
+                            } catch (SQLException e) {
+                                System.err.println("Error when closing PreparedStatement: " + e.getMessage());
+                            }
+                        }
+                    }
+                    break;
+                }
+                //Filter by Director
+                case 4: {
+                    System.out.println("What Director's shows would you like to view?");
+                    String input = scanner.nextLine();
+
+                    PreparedStatement showsbyDirStmt = null;
+                    ResultSet rs = null;
+
+                    String showsByDirSql = "SELECT med.Title, med.Year, d.name, med.Description " +
+                            "FROM `SHOW` sho, MEDIA med, DIRECTOR d " +
+                            "WHERE sho.Title=med.Title AND sho.Year=med.Year AND med.dID=d.dID AND LOWER(d.NAME) = LOWER(?)";
+
+                    try {
+                        showsbyDirStmt = conn.prepareStatement(showsByDirSql);
+                        showsbyDirStmt.setString(1, input);
+
+                        rs = showsbyDirStmt.executeQuery();
+
+                        System.out.println("\nDisplaying Shows Filtered by Director " + input + ":\n");
+                        System.out.printf("%-14s %-5s %-20s %-33.30s\n", "Title", "Year", "Director", "Description");
+
+                        while (rs.next()) {
+                            String title = rs.getString("Title");
+                            int year = rs.getInt("Year");
+                            String director = rs.getString("Name");
+                            String description = rs.getString("Description");
+                            System.out.printf("%-14s %-5s %-20s %-30.30s...\n", title, year, director, description);
+                        }
+                    } catch (SQLException e) {
+                        System.err.println("Display Shows by Director Error: " + e.getMessage());
+                        throw e;
+                    } finally {
+                        try {
+                            if (rs != null) {
+                                rs.close();
+                            }
+                        } catch (SQLException e) {
+                            System.err.println("Error when closing ResultSet: " + e.getMessage());
+                        }
+                        if (showsbyDirStmt != null) {
+                            try {
+                                showsbyDirStmt.close();
+                            } catch (SQLException e) {
+                                System.err.println("Error when closing PreparedStatement: " + e.getMessage());
+                            }
+                        }
+
+                    }
                     break;
                 }
             }
@@ -383,7 +574,7 @@ public class MediaDatabase {
                     Statement moviesStmt = null;
                     ResultSet rs = null;
 
-                    String moviesSql = "SELECT med.Title, med.Year, mov.MPA_Rating,  d.name, med.Description " +
+                    String moviesSql = "SELECT med.Title, med.Year, mov.MPA_Rating, d.name, med.Description " +
                             "FROM MOVIE mov, MEDIA med, DIRECTOR d " +
                             "WHERE mov.Title=med.Title AND mov.Year=med.Year AND med.dID=d.dID";
 
@@ -395,32 +586,222 @@ public class MediaDatabase {
                         System.out.println("\nDisplaying all movies:\n");
                         System.out.printf("%-14s %-5s %-6s %-20s %-33s\n", "Title", "Year", "MPA", "Director", "Description");
 
-                        while(rs.next()){
+                        while (rs.next()) {
                             String title = rs.getString("Title");
                             int year = rs.getInt("Year");
                             String mpa = rs.getString("MPA_Rating");
                             String director = rs.getString("Name");
                             String description = rs.getString("Description");
-                            //String truncated = description.length() > 30 ? description.substring(0, 30) + "..." : description;
                             System.out.printf("%-14s %-5s %-6s %-20s %-30.30s...\n", title, year, mpa, director, description);
                         }
                     } catch (SQLException e) {
                         System.err.println("Display Movies Error: " + e.getMessage());
                         throw e;
                     } finally {
+                        try {
+                            if (rs != null) {
+                                rs.close();
+                            }
+                        } catch (SQLException e) {
+                            System.err.println("Error when closing ResultSet: " + e.getMessage());
+                        }
+                        if (moviesStmt != null) {
+                            try {
+                                moviesStmt.close();
+                            } catch (SQLException e) {
+                                System.err.println("Error when closing PreparedStatement: " + e.getMessage());
+                            }
+                        }
 
                     }
                     break;
                 }
+                //Filter by Year
+                case 2: {
+                    // Display movies based on year
+                    System.out.println("\nWhat year would you like to filter by?");
+                    int year = getValidInteger(0, 2026);
+
+                    PreparedStatement moviesByYearStmt = null;
+                    ResultSet rs = null;
+
+                    String moviesByYearSql = "SELECT med.Title, med.Year, mov.MPA_Rating, d.name, med.Description " +
+                            "FROM MOVIE mov, MEDIA med, DIRECTOR d " +
+                            "WHERE mov.Title=med.Title AND mov.Year=med.Year AND med.dID=d.dID AND med.Year=?";
+
+                    try {
+                        moviesByYearStmt = conn.prepareStatement(moviesByYearSql);
+
+                        moviesByYearStmt.setInt(1, year);
+                        rs = moviesByYearStmt.executeQuery();
+
+                        System.out.println("\nDisplaying all movies from the year " +
+                                year + ":\n");
+                        System.out.printf("%-14s %-5s %-6s %-20s %-33.33s...\n", "Title", "Year", "MPA", "Director", "Description");
+
+                        while (rs.next()) {
+                            String title = rs.getString("Title");
+                            int yearOutput = rs.getInt("Year");
+                            String mpa = rs.getString("MPA_Rating");
+                            String director = rs.getString("Name");
+                            String description = rs.getString("Description");
+                            System.out.printf("%-14s %-5s %-6s %-20s %-30.30s...\n", title, year, mpa, director, description);
+                        }
+                    } catch (SQLException e) {
+                        System.err.println("Display Movies Error: " + e.getMessage());
+                        throw e;
+                    } finally {
+                        if (rs != null) {
+                            try {
+                                rs.close();
+                            } catch (SQLException e) {
+                                System.err.println("Error when closing ResultSet: " + e.getMessage());
+                            }
+                        }
+                        if (moviesByYearStmt != null) {
+                            try {
+                                moviesByYearStmt.close();
+                            } catch (SQLException e) {
+                                System.err.println("Error when closing PreparedStatement: " + e.getMessage());
+                            }
+                        }
+                    }
+                    break;
+                }
+                case 3: {
+                    // Display all movies filtered by Genre
+
+                    System.out.println("\nWhat genre would you like to filter movies by: ");
+                    String movieGenre = scanner.nextLine();
+
+                    PreparedStatement moviesByGenreStmt = null;
+                    ResultSet rs = null;
+
+                    String moviesByGenreSql = "SELECT med.Title, med.Year, mov.MPA_Rating, d.name, med.Description " +
+                            "FROM MOVIE mov, MEDIA med, DIRECTOR d, GENRE g " +
+                            "WHERE mov.Title=med.Title AND mov.Year=med.Year AND med.dID=d.dID AND LOWER(g.Genre)=LOWER(?) AND g.Year=mov.Year AND g.Title=mov.Title";
+
+                    try {
+                        moviesByGenreStmt = conn.prepareStatement(moviesByGenreSql);
+
+                        moviesByGenreStmt.setString(1, movieGenre);
+                        rs = moviesByGenreStmt.executeQuery();
+
+                        System.out.println("\nDisplaying movies filtered by Genre:\n");
+                        System.out.printf("%-14s %-5s %-6s %-20s %-33.30s\n", "Title", "Year", "MPA", "Director", "Description");
+
+                        while (rs.next()) {
+                            String title = rs.getString("Title");
+                            int year = rs.getInt("Year");
+                            String mpa = rs.getString("MPA_Rating");
+                            String director = rs.getString("Name");
+                            String description = rs.getString("Description");
+                            System.out.printf("%-14s %-5s %-6s %-20s %-30.30s...\n", title, year, mpa, director, description);
+                        }
+                    } catch (SQLException e) {
+                        System.err.println("Display Movies by Genre Error: " + e.getMessage());
+                        throw e;
+                    } finally {
+                        if (rs != null) {
+                            try {
+                                rs.close();
+                            } catch (SQLException e) {
+                                System.err.println("Error when closing ResultSet: " + e.getMessage());
+                            }
+                        }
+                        if (moviesByGenreStmt != null) {
+                            try {
+                                moviesByGenreStmt.close();
+                            } catch (SQLException e) {
+                                System.err.println("Error when closing PreparedStatement: " + e.getMessage());
+                            }
+                        }
+                    }
+                    break;
+                }
+                //Filter by Director
+                case 4: {
+                    System.out.println("What Director's movies would you like to view?");
+                    String input = scanner.nextLine();
+
+                    PreparedStatement moviesbyDirStmt = null;
+                    ResultSet rs = null;
+
+                    String moviesByDirSql = "SELECT med.Title, med.Year, mov.MPA_Rating, d.name, med.Description " +
+                            "FROM MOVIE mov, MEDIA med, DIRECTOR d " +
+                            "WHERE mov.Title=med.Title AND mov.Year=med.Year AND med.dID=d.dID AND LOWER(d.NAME) = LOWER(?)";
+
+                    try {
+                        moviesbyDirStmt = conn.prepareStatement(moviesByDirSql);
+                        moviesbyDirStmt.setString(1, input);
+
+                        rs = moviesbyDirStmt.executeQuery();
+
+                        System.out.println("\nDisplaying Movies Filtered by Director" + input + ":\n");
+                        System.out.printf("%-14s %-5s %-6s %-20s %-33.30s...\n", "Title", "Year", "MPA", "Director", "Description");
+
+                        while (rs.next()) {
+                            String title = rs.getString("Title");
+                            int year = rs.getInt("Year");
+                            String mpa = rs.getString("MPA_Rating");
+                            String director = rs.getString("Name");
+                            String description = rs.getString("Description");
+                            //String truncated = description.length() > 30 ? description.substring(0, 30) + "..." : description;
+                            System.out.printf("%-14s %-5s %-20s %-30.30s...\n", title, year, mpa, director, description);
+                        }
+                    } catch (SQLException e) {
+                        System.err.println("Display Movies by Director Error: " + e.getMessage());
+                        throw e;
+                    } finally {
+                        try {
+                            if (rs != null) {
+                                rs.close();
+                            }
+                        } catch (SQLException e) {
+                            System.err.println("Error when closing ResultSet: " + e.getMessage());
+                        }
+                        if (moviesbyDirStmt != null) {
+                            try {
+                                moviesbyDirStmt.close();
+                            } catch (SQLException e) {
+                                System.err.println("Error when closing PreparedStatement: " + e.getMessage());
+                            }
+                        }
+
+                    }
+                    break;
+                }
+
             }
         }
     }
 
-    public void viewPlaylists() {
+    public void viewPlaylists(Connection conn, String username) throws SQLException {
 
     }
 
     public void addMediaRequest() {
+        Scanner sc = new Scanner(System.in);
+        System.out.println("=== Media Add Request ===");
+
+        System.out.print("Enter Title: ");
+        String title = sc.nextLine();
+        
+        System.out.print("Enter Year: ");
+        int year = getValidInteger(0, 2026);
+
+        System.out.print("Movie or Show(M/S)?");
+        String type = sc.nextLine().toUpperCase();
+        if(type.equals("M")) {
+            System.out.print("Enter MPA: ");
+            String mpa = sc.nextLine();
+        };
+
+        System.out.print("Enter Director: ");
+        String director = sc.nextLine();
+
+
+
 
     }
 
