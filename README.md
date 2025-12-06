@@ -1,6 +1,10 @@
 # Media Database
 This document will explain how to run the Media Database program using Gradle. This document will also provide a backup run option if Gradle does not work for you.
 
+## Setting up the database
+
+The file 322test1.sql is located in the root folder. Use this file to create the database in MySQL.
+
 ## Using Gradle to run the Media Database 
 
 First, you must save your MySQL credentials in properties.gradle file. The steps to do so are as follows.
