@@ -30,25 +30,21 @@ application {
 }
 
 // Gradle task for running the program with preset parameters.
-tasks.register('runDatabase') {
+tasks.register('runDatabase', JavaExec) {
     dependsOn tasks.named('classes')
 
-    doLast {
-        javaexec {
-            classpath = sourceSets.main.runtimeClasspath
+    classpath = sourceSets.main.runtimeClasspath
 
-            mainClass = 'MediaDatabase'
-			
-            standardInput = System.in
+    mainClass = 'MediaDatabase'
 
-            args(
-                'jdbc:mysql://localhost:3306/mediadatabase',
-                mysqlUser,
-                mysqlPass,
-                'com.mysql.cj.jdbc.Driver'
-            )
-        }
-    }
+    standardInput = System.in
+
+    args(
+        'jdbc:mysql://localhost:3306/mediadatabase',
+        mysqlUser,
+        mysqlPass,
+        'com.mysql.cj.jdbc.Driver'
+    )
 }
 
 test {
