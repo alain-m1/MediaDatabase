@@ -7,11 +7,11 @@ The file 322test1.sql is located in the root folder. Use this file to create the
 
 ## Using Gradle to run the Media Database 
 
-First, you must save your MySQL credentials in properties.gradle file. The steps to do so are as follows.
+First, you must save your MySQL credentials in gradle.properties file. The steps are as follows:
 
-1. Create a file called 'properties.gradle' in the root directory of this project (In the same folder as this README). You can do this by copying the 'gradle.properties.example' file and removing the '.example' extension from the file name.
+1. Create a file called 'gradle.properties' in the root directory of this project (In the same folder as this README). You can do this by copying the 'gradle.properties.example' file and removing the '.example' extension from the file name.
 2. Once the file is created, open it.
-3. Enter the following 2 lines into the properties.gradle file:
+3. Enter the following 2 lines into the gradle.properties file:
 	
 	mysqlUser=YOUR_USERNAME
 	
@@ -27,11 +27,33 @@ First, you must save your MySQL credentials in properties.gradle file. The steps
 	
 6. Save your changes and close the gradle.properties file.
 
-Once you have saved your MySQL credentials to the gradle.properties file, you are ready to run the program. To run the program, you can run the following command:
+Once you have saved your MySQL credentials to the gradle.properties file, you are ready to run the program.
+
+### Running with Gradle installed (Works on both Mac/Linux and Windows)
+
+```
+gradle runDatabase -q --console=plain
+```
+
+### Running with the Gradle wrapper (no Gradle installation required)
+
+**Mac/Linux:**
+
+First, make the wrapper executable (only needs to be done once):
+```
+chmod +x gradlew
+```
+Then run:
+```
+./gradlew runDatabase -q --console=plain
+```
+
+**Windows:**
+```
+gradlew.bat runDatabase -q --console=plain
+```
 	
-	gradle runDatabase -q --console=plain
-	
-This command runs a Gradle task with preset arguments for the program. The task also passes in your MySQL username and password as arguments to the program. 
+This command runs the Gradle task with preset arguments for the program, including your MySQL username and password set earlier. 
 
 
 ## Using the Java compiler to run the Media Database
@@ -40,16 +62,16 @@ If Gradle does not work for you for whatever reason, you can still run this prog
 
 First, you need to compile the program using the following command:
 
-	javac -d . src/main/java/MediaDatabase.java
+	javac -d . src/main/java/MediaDatabase.java src/main/java/MediaRequest.java
 
 
-Next, you can run the program with the following command. (The command is slightly difference for Windows and MacOS)
+Next, you can run the program with the following command. (The command is slightly different for Windows and Mac/Linux)
 
 Windows:
 
 	java -cp ".;mysql-connector-j-9.5.0.jar" MediaDatabase "jdbc:mysql://localhost:3306/mediadatabase" MYSQL_USERNAME MYSQL_PASSWORD "com.mysql.cj.jdbc.Driver"
 
-MacOS:
+Mac/Linux:
 
 	java -cp ".:mysql-connector-j-9.5.0.jar" MediaDatabase "jdbc:mysql://localhost:3306/mediadatabase" MYSQL_USERNAME MYSQL_PASSWORD "com.mysql.cj.jdbc.Driver"
 
